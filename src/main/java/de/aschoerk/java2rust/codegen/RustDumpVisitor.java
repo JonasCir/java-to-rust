@@ -2,6 +2,7 @@ package de.aschoerk.java2rust.codegen;
 
 import static com.github.javaparser.PositionUtils.sortByBeginPosition;
 import static com.github.javaparser.ast.internal.Utils.isNullOrEmpty;
+import static de.aschoerk.java2rust.Utils.camelToSnake;
 import static java.util.Collections.reverse;
 
 import java.util.ArrayList;
@@ -175,18 +176,11 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         }
         String name = n;
         if (Character.isLowerCase(name.charAt(0))) {
-            StringBuilder sb = new StringBuilder();
-            for (Character c : name.toCharArray()) {
-                if (Character.isUpperCase(c)) {
-                    sb.append("_").append(Character.toLowerCase(c));
-                } else {
-                    sb.append(c);
-                }
-            }
-            return sb.toString();
+            return camelToSnake(name);
         }
         return n;
     }
+
 
     private String removePlusAndSuffix(String value, CharSequence... searchStrings) {
         if (value.startsWith("+")) {
@@ -201,7 +195,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         if (value.endsWith(".")) {
             value = value + "0";
         }
-        value = value.replace("d.",".");
+        value = value.replace("d.", ".");
         return value;
     }
 
@@ -266,7 +260,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
     protected void printTypeArgs(final List<Type> args, final Object arg) {
         if (!isNullOrEmpty(args)) {
             printer.print("<");
-            for (final Iterator<Type> i = args.iterator(); i.hasNext();) {
+            for (final Iterator<Type> i = args.iterator(); i.hasNext(); ) {
                 final Type t = i.next();
                 t.accept(this, arg);
                 if (i.hasNext()) {
@@ -280,7 +274,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
     protected void printTypeParameters(final List<TypeParameter> args, final Object arg) {
         if (!isNullOrEmpty(args)) {
             printer.print("<");
-            for (final Iterator<TypeParameter> i = args.iterator(); i.hasNext();) {
+            for (final Iterator<TypeParameter> i = args.iterator(); i.hasNext(); ) {
                 final TypeParameter t = i.next();
                 t.accept(this, arg);
                 if (i.hasNext()) {
@@ -294,10 +288,10 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
     protected void printArguments(final List<Expression> args, final Object arg) {
         printer.print("(");
         if (!isNullOrEmpty(args)) {
-            for (final Iterator<Expression> i = args.iterator(); i.hasNext();) {
+            for (final Iterator<Expression> i = args.iterator(); i.hasNext(); ) {
                 final Expression e = i.next();
                 if (e instanceof NameExpr) {
-                    NameExpr ne = (NameExpr)e;
+                    NameExpr ne = (NameExpr) e;
                     Optional<Pair<TypeDescription, Node>> decl = idTracker.findDeclarationNodeFor(ne.getName(), ne);
                     if (decl.isPresent() && decl.get().getLeft() != null) {
                         final TypeDescription left = decl.get().getLeft();
@@ -352,7 +346,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         }
 
         if (!isNullOrEmpty(n.getTypes())) {
-            for (final Iterator<TypeDeclaration> i = n.getTypes().iterator(); i.hasNext();) {
+            for (final Iterator<TypeDeclaration> i = n.getTypes().iterator(); i.hasNext(); ) {
                 i.next().accept(this, arg);
                 printer.printLn();
                 if (i.hasNext()) {
@@ -382,7 +376,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         Optional<Pair<TypeDescription, Node>> b = idTracker.findDeclarationNodeFor(n.getName(), n);
 
         if (b.isPresent()
-            && (NodeEvaluator.isNonStaticFieldDeclaration(b.get().getRight()) && !idTracker.isInConstructor()
+                && (NodeEvaluator.isNonStaticFieldDeclaration(b.get().getRight()) && !idTracker.isInConstructor()
                 || NodeEvaluator.isNonStaticMethodDeclaration(b.get().getRight()))) {
             printer.print("self.");
         }
@@ -421,7 +415,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
     public void visit(final ClassOrInterfaceDeclaration n, final Object arg) {
         printJavaComment(n.getComment(), arg);
 
-        final boolean staticSearched[] = { true };
+        final boolean staticSearched[] = {true};
         Function<BodyDeclaration, Boolean> selectFieldDeclarationBooleanFunction = mem -> {
             if (mem instanceof FieldDeclaration) {
                 FieldDeclaration fd = (FieldDeclaration) mem;
@@ -441,7 +435,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
 
         if (!isNullOrEmpty(n.getImplements())) {
             printer.print("#[derive(");
-            for (final Iterator<ClassOrInterfaceType> i = n.getImplements().iterator(); i.hasNext();) {
+            for (final Iterator<ClassOrInterfaceType> i = n.getImplements().iterator(); i.hasNext(); ) {
                 final ClassOrInterfaceType c = i.next();
                 c.accept(this, arg);
                 if (i.hasNext()) {
@@ -481,7 +475,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
                 printer.printLn(" {");
                 printer.indent();
                 int count = n.getExtends().size() > 1 ? 0 : -1;
-                for (final Iterator<ClassOrInterfaceType> i = n.getExtends().iterator(); i.hasNext();) {
+                for (final Iterator<ClassOrInterfaceType> i = n.getExtends().iterator(); i.hasNext(); ) {
                     final ClassOrInterfaceType c = i.next();
                     printer.print("super" + (count >= 0 ? ++count + "" : "") + ": ");
                     c.accept(this, arg);
@@ -558,7 +552,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         printer.print(n.getName());
         if (!isNullOrEmpty(n.getTypeBound())) {
             printer.print(" extends ");
-            for (final Iterator<ClassOrInterfaceType> i = n.getTypeBound().iterator(); i.hasNext();) {
+            for (final Iterator<ClassOrInterfaceType> i = n.getTypeBound().iterator(); i.hasNext(); ) {
                 final ClassOrInterfaceType c = i.next();
                 c.accept(this, arg);
                 if (i.hasNext()) {
@@ -673,7 +667,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         }
 
         printer.print(" ");
-        for (final Iterator<VariableDeclarator> i = n.getVariables().iterator(); i.hasNext();) {
+        for (final Iterator<VariableDeclarator> i = n.getVariables().iterator(); i.hasNext(); ) {
             final VariableDeclarator var = i.next();
 
             var.accept(this, n.getType());
@@ -926,7 +920,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
 
     @Override
     public void visit(final BinaryExpr n, final Object arg) {
-        if (String.class.equals(idTracker.getType(n)))   {
+        if (String.class.equals(idTracker.getType(n))) {
             printStringExpression(n, arg);
             return;
         }
@@ -1012,7 +1006,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
 
     private void genStringPart(Node n, List<Node> result) {
         if (n instanceof BinaryExpr) {
-            result.addAll(genStringExprSequence(((BinaryExpr)n)));
+            result.addAll(genStringExprSequence(((BinaryExpr) n)));
         } else {
             result.add(n);
         }
@@ -1021,7 +1015,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
     private void printStringExpression(BinaryExpr n, final Object arg) {
         List<Node> binChain = genStringExprSequence(n);
         printer.print("format!(\"");
-        for (Node node: binChain) {
+        for (Node node : binChain) {
             if (node instanceof StringLiteralExpr) {
                 String value = ((StringLiteralExpr) node).getValue();
                 printer.print(value);
@@ -1031,10 +1025,10 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         }
         printer.print("\"");
 
-        for (Node node: binChain) {
+        for (Node node : binChain) {
             if (!(node instanceof StringLiteralExpr) && node != n) {
                 printer.print(", ");
-                node.accept(this,arg);
+                node.accept(this, arg);
             }
         }
         printer.print(")");
@@ -1092,7 +1086,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         n.getScope().accept(this, arg);
         String scope = printer.getMark(mark);
         printer.drop();
-        int i = StringUtils.lastIndexOfAny(StringUtils.stripEnd(scope," "), "\n", "\t", " ", ".");
+        int i = StringUtils.lastIndexOfAny(StringUtils.stripEnd(scope, " "), "\n", "\t", " ", ".");
         String accessed = i <= 0 ? scope : scope.substring(i + 1);
         if (Character.isUpperCase(accessed.charAt(0)) && accessed.length() > 1 && Character.isLowerCase(accessed.charAt(1))) {
             printer.print("::");
@@ -1251,7 +1245,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
                 Node declNode = decl.get().getRight();
                 if (declNode != null) {
                     if (declNode instanceof MethodDeclaration) {
-                        MethodDeclaration methodDeclaration = (MethodDeclaration)declNode;
+                        MethodDeclaration methodDeclaration = (MethodDeclaration) declNode;
                         if (!ModifierSet.isStatic(methodDeclaration.getModifiers()))
                             printer.print("self.");
                         else
@@ -1372,17 +1366,17 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
             printModifiers(n.getModifiers());
 
             printTypeParameters(n.getTypeParameters(), arg);
-            if(!n.getTypeParameters().isEmpty()) {
+            if (!n.getTypeParameters().isEmpty()) {
                 printer.print(" ");
             }
             printer.print("fn new");
 
             printer.print("(");
-            if(!n.getParameters().isEmpty()) {
+            if (!n.getParameters().isEmpty()) {
                 for (final Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
                     final Parameter p = i.next();
                     p.accept(this, arg);
-                    if(i.hasNext()) {
+                    if (i.hasNext()) {
                         printer.print(", ");
                     }
                 }
@@ -1390,20 +1384,19 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
             printer.print(") -> ");
             printer.print(n.getName());
 
-            if(!isNullOrEmpty(n.getThrows())) {
+            if (!isNullOrEmpty(n.getThrows())) {
                 printer.print(" throws ");
                 for (final Iterator<ReferenceType> i = n.getThrows().iterator(); i.hasNext(); ) {
                     final ReferenceType referenceType = i.next();
                     referenceType.accept(this, arg);
-                    if(i.hasNext()) {
+                    if (i.hasNext()) {
                         printer.print(", ");
                     }
                 }
             }
             printer.print(" ");
             n.getBlock().accept(this, arg);
-        }
-        finally {
+        } finally {
             idTracker.setInConstructor(false);
         }
     }
@@ -1484,8 +1477,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
                 printer.print(" ");
                 n.getBody().accept(this, arg);
             }
-        }
-        finally {
+        } finally {
             idTracker.setCurrentMethod(null);
         }
     }
@@ -1496,7 +1488,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         for (final Iterator<ReferenceType> i = n.getThrows().iterator(); i.hasNext(); ) {
             final ReferenceType name = i.next();
             name.accept(this, arg);
-            if(i.hasNext()) {
+            if (i.hasNext()) {
                 printer.print(", ");
             }
         }
@@ -1565,7 +1557,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
 
         printer.print(" ");
 
-        for (final Iterator<VariableDeclarator> i = n.getVars().iterator(); i.hasNext();) {
+        for (final Iterator<VariableDeclarator> i = n.getVars().iterator(); i.hasNext(); ) {
             final VariableDeclarator v = i.next();
             v.accept(this, n.getType());
             if (i.hasNext()) {
@@ -1713,7 +1705,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
 
         if (!n.getImplements().isEmpty()) {
             printer.print(" implements ");
-            for (final Iterator<ClassOrInterfaceType> i = n.getImplements().iterator(); i.hasNext();) {
+            for (final Iterator<ClassOrInterfaceType> i = n.getImplements().iterator(); i.hasNext(); ) {
                 final ClassOrInterfaceType c = i.next();
                 c.accept(this, arg);
                 if (i.hasNext()) {
@@ -1726,7 +1718,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         printer.indent();
         if (n.getEntries() != null) {
             printer.printLn();
-            for (final Iterator<EnumConstantDeclaration> i = n.getEntries().iterator(); i.hasNext();) {
+            for (final Iterator<EnumConstantDeclaration> i = n.getEntries().iterator(); i.hasNext(); ) {
                 final EnumConstantDeclaration e = i.next();
                 e.accept(this, arg);
                 if (i.hasNext()) {
@@ -1876,7 +1868,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         if (n.getInit() != null && !n.getInit().isEmpty()) {
             printer.printLn(" {");
             printer.indent();
-            for (final Iterator<Expression> i = n.getInit().iterator(); i.hasNext();) {
+            for (final Iterator<Expression> i = n.getInit().iterator(); i.hasNext(); ) {
                 final Expression e = i.next();
                 e.accept(this, arg);
                 printer.printLn(";");
@@ -1896,7 +1888,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         encapsulateIfNotBlock(n.getBody(), arg);
         printer.printLn("");
         if (n.getUpdate() != null && !n.getUpdate().isEmpty()) {
-            for (final Iterator<Expression> i = n.getUpdate().iterator(); i.hasNext();) {
+            for (final Iterator<Expression> i = n.getUpdate().iterator(); i.hasNext(); ) {
                 final Expression e = i.next();
                 e.accept(this, arg);
                 printer.printLn(";");
@@ -1959,7 +1951,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
             printer.printLn("break 'try" + tryCount);
             printer.printLn("}");
             if (n.getCatchs() != null) {
-                printer.printLn("match tryResult"+ tryCount + " {");
+                printer.printLn("match tryResult" + tryCount + " {");
                 printer.indent();
                 for (final CatchClause c : n.getCatchs()) {
                     c.accept(this, arg);
@@ -2029,7 +2021,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
             printer.print("(");
         }
         if (parameters != null) {
-            for (Iterator<Parameter> i = parameters.iterator(); i.hasNext();) {
+            for (Iterator<Parameter> i = parameters.iterator(); i.hasNext(); ) {
                 Parameter p = i.next();
                 p.accept(this, arg);
                 if (i.hasNext()) {
@@ -2064,7 +2056,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
         if (!n.getTypeArguments().getTypeArguments().isEmpty()) {
             printer.print("<");
             for (Iterator<Type> i = n.getTypeArguments().getTypeArguments().iterator(); i
-                    .hasNext();) {
+                    .hasNext(); ) {
                 Type p = i.next();
                 p.accept(this, arg);
                 if (i.hasNext()) {

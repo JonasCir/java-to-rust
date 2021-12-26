@@ -1,4 +1,4 @@
-package de.aschoerk.java2rust;
+package de.aschoerk.java2rust.codegen;
 
 
 import com.github.javaparser.ast.Node;

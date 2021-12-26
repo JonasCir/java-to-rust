@@ -10,6 +10,7 @@ import java.nio.file.Path;
 
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
+import de.aschoerk.java2rust.codegen.RustDumpVisitor;
 
 
 public class JavaConverter {

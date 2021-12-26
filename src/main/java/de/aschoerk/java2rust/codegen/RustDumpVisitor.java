@@ -1,4 +1,4 @@
-package de.aschoerk.java2rust;
+package de.aschoerk.java2rust.codegen;
 
 import static com.github.javaparser.PositionUtils.sortByBeginPosition;
 import static com.github.javaparser.ast.internal.Utils.isNullOrEmpty;
@@ -13,6 +13,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import de.aschoerk.java2rust.IdTracker;
+import de.aschoerk.java2rust.TypeDescription;
+import de.aschoerk.java2rust.TypeTrackerVisitor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -298,7 +301,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
                     Optional<Pair<TypeDescription, Node>> decl = idTracker.findDeclarationNodeFor(ne.getName(), ne);
                     if (decl.isPresent() && decl.get().getLeft() != null) {
                         final TypeDescription left = decl.get().getLeft();
-                        if (!left.clazz.isPrimitive() || left.getArrayCount() > 0) {
+                        if (!left.getClazz().isPrimitive() || left.getArrayCount() > 0) {
                             printer.print("&");
                         }
                     }
@@ -1926,7 +1929,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
 
     @Override
     public void visit(final TryStmt n, final Object arg) {
-        int tryCount = ++idTracker.tryCount;
+        int tryCount = idTracker.incrementAndGetTryCount();
         try {
             printJavaComment(n.getComment(), arg);
             printer.printLn("let tryResult" + tryCount + " = 0;");
@@ -1970,7 +1973,7 @@ public class RustDumpVisitor extends VoidVisitorAdapter<Object> {
                 n.getFinallyBlock().accept(this, arg);
             }
         } finally {
-            idTracker.tryCount --;
+            idTracker.decrementTryCount();
         }
     }
 

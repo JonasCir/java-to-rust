@@ -26,6 +26,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: ${{ matrix.java }}
+          # Use Eclipse Temurin distribution
           distribution: 'temurin'
           cache: 'maven'
 

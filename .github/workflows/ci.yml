@@ -3,11 +3,11 @@
 
 name: Java2Rust CI
 
-on:
-  push:
-    branches: [ master, bump-to-java-11 ]
-  pull_request:
-    branches: [ master ]
+on: [push]
+  #push:
+  #  branches: [ master, bump-to-java-11 ]
+  #pull_request:
+  #  branches: [ master ]
 
 jobs:
   build:

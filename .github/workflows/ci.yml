@@ -5,7 +5,7 @@ name: Java2Rust CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, bump-to-java-11 ]
   pull_request:
     branches: [ master ]
 
